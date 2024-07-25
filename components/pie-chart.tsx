@@ -69,31 +69,37 @@ export function CustomPieChart({
         )}
       </CardHeader>
       <CardContent className="flex-1 pb-0">
-        <ChartContainer
-          config={chartConfig}
-          className="mx-auto aspect-square max-h-[500px]"
-        >
-          <PieChart>
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent hideIndicator hideLabel />}
-            />
-            <Pie data={chartData} dataKey={dataKey} nameKey="name">
-              {chartData.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={chartColors[index % chartColors.length]}
-                />
-              ))}
-              <LabelList
-                dataKey="name"
-                className="fill-background"
-                stroke="none"
-                fontSize={12}
+        {data.length > 0 ? (
+          <ChartContainer
+            config={chartConfig}
+            className="mx-auto aspect-square max-h-[500px]"
+          >
+            <PieChart>
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent hideIndicator hideLabel />}
               />
-            </Pie>
-          </PieChart>
-        </ChartContainer>
+              <Pie data={chartData} dataKey={dataKey} nameKey="name">
+                {chartData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={chartColors[index % chartColors.length]}
+                  />
+                ))}
+                <LabelList
+                  dataKey="name"
+                  className="fill-background"
+                  stroke="none"
+                  fontSize={12}
+                />
+              </Pie>
+            </PieChart>
+          </ChartContainer>
+        ) : (
+          <div className="flex items-center justify-center h-[300px] text-[var(--card-text)]">
+            Loading...
+          </div>
+        )}
       </CardContent>
     </Card>
   )

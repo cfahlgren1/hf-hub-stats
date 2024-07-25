@@ -4,4 +4,3 @@
 - [Dataset](https://huggingface.co/datasets/cfahlgren1/hub-stats) updated on HuggingFace
 
 ![HF Stats](./stats.png)
-
