@@ -19,39 +19,43 @@ import {
 } from "@/components/ui/chart"
 
 export interface ChartDataPoint {
-  month: Date;
-  models: number;
-  datasets: number;
-  spaces: number;
+  month: Date
+  models: number
+  datasets: number
+  spaces: number
 }
 
 interface AreaChartStackedProps {
-  data: ChartDataPoint[];
+  data: ChartDataPoint[]
 }
 
 const chartConfig = {
   models: {
     label: "Models",
-    color: "hsl(0, 70%, 70%)", // Light red
+    color: "hsl(var(--chart-1))",
   },
   datasets: {
     label: "Datasets",
-    color: "hsl(120, 70%, 40%)", // Darker green
+    color: "hsl(var(--chart-2))",
   },
   spaces: {
     label: "Spaces",
-    color: "hsl(210, 70%, 70%)", // Light blue
+    color: "hsl(var(--chart-3))",
   },
 } satisfies ChartConfig
 
 export function AreaChartStacked({ data }: AreaChartStackedProps) {
-  const sortedData = [...data].sort((a, b) => a.month.getTime() - b.month.getTime());
+  const sortedData = [...data].sort(
+    (a, b) => a.month.getTime() - b.month.getTime()
+  )
 
   return (
-    <Card>
+    <Card className="bg-[var(--card-background)]">
       <CardHeader>
-        <CardTitle>Hugging Face Hub Growth</CardTitle>
-        <CardDescription>
+        <CardTitle className="text-[var(--card-text)]">
+          Hugging Face Hub Growth Each Month
+        </CardTitle>
+        <CardDescription className="text-[var(--card-text)]">
           Monthly creation trends for models, datasets, and spaces
         </CardDescription>
       </CardHeader>
@@ -72,44 +76,44 @@ export function AreaChartStacked({ data }: AreaChartStackedProps) {
               axisLine={false}
               tickMargin={8}
               tickFormatter={(value) => {
-                const date = new Date(value);
-                return date.toLocaleString('default', { month: 'short', year: 'numeric' });
+                const date = new Date(value)
+                return date.toLocaleString("default", {
+                  month: "short",
+                  year: "numeric",
+                })
               }}
             />
             <ChartTooltip
               cursor={true}
-              content={
-                <ChartTooltipContent
-                  indicator="line"
-                  hideLabel
-                />
-              }
+              content={<ChartTooltipContent indicator="line" hideLabel />}
             />
             <Area
               dataKey="spaces"
               type="natural"
-              fill="hsl(210, 70%, 70%)"
+              fill="hsl(var(--chart-3))"
               fillOpacity={0.4}
-              stroke="hsl(210, 70%, 70%)"
+              stroke="hsl(var(--chart-3))"
               stackId="a"
             />
             <Area
               dataKey="datasets"
               type="natural"
-              fill="hsl(120, 70%, 40%)"
+              fill="hsl(var(--chart-2))"
               fillOpacity={0.2}
-              stroke="hsl(120, 70%, 40%)"
+              stroke="hsl(var(--chart-2))"
               stackId="a"
             />
             <Area
               dataKey="models"
               type="natural"
-              fill="hsl(0, 70%, 70%)"
+              fill="hsl(var(--chart-1))"
               fillOpacity={0.4}
-              stroke="hsl(0, 70%, 70%)"
+              stroke="hsl(var(--chart-1))"
               stackId="a"
             />
-            <ChartLegend content={<ChartLegendContent />} />
+            <ChartLegend
+              content={<ChartLegendContent className="text-white" />}
+            />
           </AreaChart>
         </ChartContainer>
       </CardContent>

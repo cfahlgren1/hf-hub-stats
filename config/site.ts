@@ -2,8 +2,7 @@ export type SiteConfig = typeof siteConfig
 
 export const siteConfig = {
   name: "Hugging Face Hub Stats",
-  description:
-    "Tracking Hugging Face Hub usage",
+  description: "Tracking Hugging Face Hub usage",
   mainNav: [
     {
       title: "Home",
