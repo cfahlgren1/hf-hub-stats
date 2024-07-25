@@ -37,20 +37,15 @@ export function CustomPieChart({
   dataKey,
 }: PieChartProps) {
   const chartColors = [
-    "hsl(var(--chart-1))",
-    "hsl(var(--chart-2))",
-    "hsl(var(--chart-3))",
-    "hsl(var(--chart-4))",
     "hsl(var(--chart-5))",
+    "hsl(var(--chart-4))",
+    "hsl(var(--chart-3))",
+    "hsl(var(--chart-2))",
+    "hsl(var(--chart-1))",
   ]
 
-  // Sort data by value in descending order
   const sortedData = [...data].sort((a, b) => b.value - a.value)
-
-  // Take top 4 items
   const topItems = sortedData.slice(0, 4)
-
-  // Sum the rest under "Other"
   const otherValue = sortedData
     .slice(4)
     .reduce((sum, item) => sum + item.value, 0)
@@ -58,16 +53,16 @@ export function CustomPieChart({
   const chartData =
     otherValue > 0
       ? [
-          ...topItems,
-          { name: "Other", value: otherValue, fill: chartColors[4] },
-        ]
+        ...topItems,
+        { name: "Other", value: otherValue, fill: chartColors[4] },
+      ]
       : topItems
 
   return (
     <Card className="bg-[var(--card-background)]">
       <CardHeader className="items-center pb-0">
         <CardTitle className="text-[var(--card-text)]">{title}</CardTitle>
-        {description && ( // Conditionally render CardDescription
+        {description && (
           <CardDescription className="text-[var(--card-text)]">
             {description}
           </CardDescription>
