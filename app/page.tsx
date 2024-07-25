@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import * as duckdb from "@duckdb/duckdb-wasm"
 import { Loader2 } from "lucide-react"
+import { toast } from 'sonner'
 
 import { CREATE_VIEWS_QUERY, FETCH_CHART_DATA_QUERY, FETCH_DATASET_LICENSE_DATA_QUERY, FETCH_FINETUNE_MODEL_GROWTH_QUERY, FETCH_MODEL_LICENSE_DATA_QUERY, FETCH_SPACE_SDK_DATA_QUERY } from "@/lib/queries"
 import { AreaChartStacked, ChartDataPoint } from "@/components/area-chart-stacked"
@@ -107,6 +108,7 @@ export default function IndexPage() {
     e.preventDefault()
     if (!conn) {
       console.warn("Database connection not established")
+      toast.error("Database connection not established")
       return
     }
 
@@ -123,6 +125,7 @@ export default function IndexPage() {
       setFinetuneModelGrowthData(data)
     } catch (error) {
       console.error("Error executing query:", error)
+      toast.error(`Failed to fetch data for ${baseModel}`)
     } finally {
       setIsLoading(false)
     }
@@ -169,7 +172,7 @@ export default function IndexPage() {
           <input
             type="text"
             value={baseModel}
-            onChange={(e) => setBaseModel(e.target.value)}
+            onChange={(e) => setBaseModel(e.target.value.trim())}
             placeholder="Base Model Name"
             className="px-4 w-full py-2 border rounded"
           />
@@ -190,7 +193,7 @@ export default function IndexPage() {
         <div className="flex flex-col gap-4 max-w-4xl mt-10 w-full mx-auto">
           <SimpleArea
             title="Finetune Model Growth"
-            description={`Showing the growth of finetune models over time for ${baseModel || "your favorite model."}`}
+            description={`Showing the growth of finetune models over time for ${baseModel || "your favorite model"}`}
             data={finetuneModelGrowthData}
           />
         </div>

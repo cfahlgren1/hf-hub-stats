@@ -44,7 +44,7 @@ export const FETCH_SPACE_SDK_DATA_QUERY = `
 
 export const FETCH_FINETUNE_MODEL_GROWTH_QUERY = (baseModel: string) => `
   WITH RECURSIVE month_series AS (
-    SELECT DATE_TRUNC('month', MIN(CAST(createdAt AS TIMESTAMP))) AS month
+    SELECT DATE_TRUNC('month', MIN(CAST(createdAt AS TIMESTAMP))) - INTERVAL 1 MONTH AS month
     FROM models, UNNEST(tags) AS t(tag)
     WHERE tag = 'base_model:${baseModel}'
 
