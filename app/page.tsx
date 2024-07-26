@@ -11,6 +11,7 @@ import { CustomPieChart } from "@/components/pie-chart"
 import { SimpleArea } from "@/components/simple-area"
 import { Button } from "@/components/ui/button"
 import { GenericTable } from "@/components/simple-table"
+import { CTABanner } from "@/components/cta"
 
 export default function IndexPage() {
   const [conn, setConn] = useState<duckdb.AsyncDuckDBConnection | null>(null)
@@ -215,7 +216,10 @@ export default function IndexPage() {
           />
         </div>
       )}
-
+      <div className="my-48">
+        <CTABanner />
+      </div>
     </section>
+
   )
 }
