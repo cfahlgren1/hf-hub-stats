@@ -173,7 +173,7 @@ export default function IndexPage() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 max-w-4xl mt-10 w-full mx-auto">
+      <div className="flex flex-col gap-4 max-w-4xl my-36 w-full mx-auto">
         <h2 className="text-4xl font-bold my-10 text-center">Finetuned Model Leaderboard</h2>
         <GenericTable
           data={topFinetunedModels}
