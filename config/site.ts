@@ -11,7 +11,7 @@ export const siteConfig = {
   ],
   links: {
     twitter: "https://twitter.com/calebfahlgren",
-    github: "https://github.com/cfahlgren1",
+    github: "https://github.com/cfahlgren1/hf-hub-stats",
     docs: "https://ui.shadcn.com",
   },
 }
