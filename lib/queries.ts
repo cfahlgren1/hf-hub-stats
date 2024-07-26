@@ -45,8 +45,11 @@ export const FETCH_SPACE_SDK_DATA_QUERY = `
 export const FETCH_FINETUNE_MODEL_GROWTH_QUERY = (baseModel: string) => `
   WITH RECURSIVE month_series AS (
     SELECT DATE_TRUNC('month', MIN(CAST(createdAt AS TIMESTAMP))) - INTERVAL 1 MONTH AS month
-    FROM models, UNNEST(tags) AS t(tag)
-    WHERE tag = 'base_model:${baseModel}'
+    FROM models
+    WHERE EXISTS (
+      SELECT 1 FROM UNNEST(tags) AS t(tag)
+      WHERE tag ILIKE 'base_model:%${baseModel}'
+    )
 
     UNION ALL
 
@@ -55,15 +58,34 @@ export const FETCH_FINETUNE_MODEL_GROWTH_QUERY = (baseModel: string) => `
     WHERE month < DATE_TRUNC('month', CURRENT_DATE)
   ),
   finetuned_models AS (
-    SELECT DATE_TRUNC('month', CAST(createdAt AS TIMESTAMP)) AS creation_month
-    FROM models, UNNEST(tags) AS t(tag)
-    WHERE tag = 'base_model:${baseModel}'
+    SELECT DISTINCT id, DATE_TRUNC('month', CAST(createdAt AS TIMESTAMP)) AS creation_month
+    FROM models
+    WHERE EXISTS (
+      SELECT 1 FROM UNNEST(tags) AS t(tag)
+      WHERE tag ILIKE 'base_model:%${baseModel}'
+    )
   )
   SELECT
     strftime(ms.month, '%Y-%m') as date,
-    COALESCE(SUM(COUNT(fm.creation_month)) OVER (ORDER BY ms.month), 0) AS count
+    COALESCE(SUM(COUNT(DISTINCT fm.id)) OVER (ORDER BY ms.month), 0) AS count
   FROM month_series ms
   LEFT JOIN finetuned_models fm ON ms.month = fm.creation_month
   GROUP BY ms.month
   ORDER BY ms.month
+`
+
+export const FETCH_TOP_BASE_MODELS_TABLE_QUERY = `
+  WITH base_models AS (
+    SELECT DISTINCT id,
+      REGEXP_REPLACE(SUBSTRING(tag, 12), '^(finetune:|adapter:)', '') AS model
+    FROM models, UNNEST(tags) AS t(tag)
+    WHERE tag ILIKE 'base_model:%'
+  )
+  SELECT
+    model,
+    COUNT(DISTINCT id) AS finetunes
+  FROM base_models
+  GROUP BY model
+  ORDER BY finetunes DESC
+  LIMIT 10
 `

@@ -5,11 +5,12 @@ import * as duckdb from "@duckdb/duckdb-wasm"
 import { Loader2 } from "lucide-react"
 import { toast } from 'sonner'
 
-import { CREATE_VIEWS_QUERY, FETCH_CHART_DATA_QUERY, FETCH_DATASET_LICENSE_DATA_QUERY, FETCH_FINETUNE_MODEL_GROWTH_QUERY, FETCH_MODEL_LICENSE_DATA_QUERY, FETCH_SPACE_SDK_DATA_QUERY } from "@/lib/queries"
+import { CREATE_VIEWS_QUERY, FETCH_CHART_DATA_QUERY, FETCH_DATASET_LICENSE_DATA_QUERY, FETCH_FINETUNE_MODEL_GROWTH_QUERY, FETCH_MODEL_LICENSE_DATA_QUERY, FETCH_SPACE_SDK_DATA_QUERY, FETCH_TOP_BASE_MODELS_TABLE_QUERY } from "@/lib/queries"
 import { AreaChartStacked, ChartDataPoint } from "@/components/area-chart-stacked"
 import { CustomPieChart } from "@/components/pie-chart"
 import { SimpleArea } from "@/components/simple-area"
 import { Button } from "@/components/ui/button"
+import { GenericTable } from "@/components/simple-table"
 
 export default function IndexPage() {
   const [conn, setConn] = useState<duckdb.AsyncDuckDBConnection | null>(null)
@@ -20,6 +21,7 @@ export default function IndexPage() {
   const [baseModel, setBaseModel] = useState("meta-llama/Meta-Llama-3-8B")
   const [finetuneModelGrowthData, setFinetuneModelGrowthData] = useState<Array<{ date: Date; count: number }>>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [topFinetunedModels, setTopFinetunedModels] = useState<Array<{ model: string; finetunes: number }> | undefined>(undefined)
 
   useEffect(() => {
     initDB()
@@ -72,11 +74,12 @@ export default function IndexPage() {
 
     setChartData(data)
 
-    const [modelLicenseResult, datasetLicenseResult, spaceSdkResult] =
+    const [modelLicenseResult, datasetLicenseResult, spaceSdkResult, topFinetunedModelsResult] =
       await Promise.all([
         connection.query(FETCH_MODEL_LICENSE_DATA_QUERY),
         connection.query(FETCH_DATASET_LICENSE_DATA_QUERY),
         connection.query(FETCH_SPACE_SDK_DATA_QUERY),
+        connection.query(FETCH_TOP_BASE_MODELS_TABLE_QUERY),
       ])
 
     setModelLicenseData(
@@ -102,6 +105,11 @@ export default function IndexPage() {
         fill: `hsl(${index * 30}, 70%, 50%)`,
       }))
     )
+
+    setTopFinetunedModels(topFinetunedModelsResult.toArray().map(row => ({
+      model: row.model,
+      finetunes: Number(row.finetunes)
+    })))
   }
 
   const handleBaseModelSubmit = async (e: React.FormEvent) => {
@@ -165,6 +173,15 @@ export default function IndexPage() {
         </div>
       </div>
 
+      <div className="flex flex-col gap-4 max-w-4xl mt-10 w-full mx-auto">
+        <h2 className="text-4xl font-bold my-10 text-center">Finetuned Model Leaderboard</h2>
+        <GenericTable
+          data={topFinetunedModels}
+          caption="Top 10 base models by number of finetunes"
+        />
+      </div>
+
+
       <div className="flex flex-col items-center gap-4 max-w-6xl mt-10 w-full mx-auto">
         <h2 className="text-4xl font-bold text-center">Finetuned Model Growth</h2>
         <p className="text-center mb-4">Find how many finetuned models have been created for your favorite model</p>
@@ -198,6 +215,7 @@ export default function IndexPage() {
           />
         </div>
       )}
+
     </section>
   )
 }
