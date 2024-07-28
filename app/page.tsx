@@ -25,6 +25,7 @@ export default function IndexPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [topFinetunedModels, setTopFinetunedModels] = useState<Array<{ model: string; finetunes: number }> | undefined>(undefined)
   const isMobile = useIsMobile()
+  const [chartDataError, setChartDataError] = useState<string | null>(null)
 
   useEffect(() => {
     initDB()
@@ -72,16 +73,22 @@ export default function IndexPage() {
   }, [conn, isMobile])
 
   const fetchChartData = async (connection: duckdb.AsyncDuckDBConnection) => {
-    const result = await connection.query(FETCH_CHART_DATA_QUERY)
+    try {
+      const result = await connection.query(FETCH_CHART_DATA_QUERY)
 
-    const data: ChartDataPoint[] = result.toArray().map((row) => ({
-      month: new Date(row.month),
-      models: Number(row.models),
-      datasets: Number(row.datasets),
-      spaces: Number(row.spaces),
-    }))
+      const data: ChartDataPoint[] = result.toArray().map((row) => ({
+        month: new Date(row.month),
+        models: Number(row.models),
+        datasets: Number(row.datasets),
+        spaces: Number(row.spaces),
+      }))
 
-    setChartData(data)
+      setChartData(data)
+      setChartDataError(null)
+    } catch (error) {
+      console.error("Error fetching chart data:", error)
+      setChartDataError("There was an issue with the query for the Hugging Face Hub growth chart.")
+    }
 
     const [modelLicenseResult, datasetLicenseResult, spaceSdkResult, topFinetunedModelsResult] =
       await Promise.all([
@@ -153,7 +160,11 @@ export default function IndexPage() {
       </h1>
 
       <div className="flex flex-col gap-4 max-w-6xl mt-10 w-full mx-auto">
-        <AreaChartStacked data={chartData} />
+        {chartDataError ? (
+          <div className="text-center text-red-500">{chartDataError}</div>
+        ) : (
+          <AreaChartStacked data={chartData} />
+        )}
       </div>
 
       {/* Mobile devices have much less resources to process these queries */}
