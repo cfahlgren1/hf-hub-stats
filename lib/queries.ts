@@ -18,6 +18,7 @@ export const FETCH_CHART_DATA_QUERY = `
     COUNT(*) FILTER (WHERE type = 'dataset') AS datasets,
     COUNT(*) FILTER (WHERE type = 'space') AS spaces
   FROM all_data
+  WHERE month < DATE_TRUNC('month', CURRENT_DATE)
   GROUP BY month
   ORDER BY month
 `
