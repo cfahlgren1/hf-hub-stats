@@ -22,7 +22,6 @@ export default function IndexPage() {
   const [spaceSdkData, setSpaceSdkData] = useState<Array<{ name: string; value: number; fill: string }>>([])
   const [baseModel, setBaseModel] = useState("meta-llama/Meta-Llama-3-8B")
   const [finetuneModelGrowthData, setFinetuneModelGrowthData] = useState<Array<{ date: Date; count: number }>>([])
-  const [isLoading, setIsLoading] = useState(false)
   const [topFinetunedModels, setTopFinetunedModels] = useState<Array<{ model: string; finetunes: number }> | undefined>(undefined)
   const isMobile = useIsMobile()
   const [chartDataError, setChartDataError] = useState<string | null>(null)
@@ -65,12 +64,11 @@ export default function IndexPage() {
     setConn(connection)
   }
 
-  // fetch data when connection establishes and isMobile is false
   useEffect(() => {
-    if (conn && !isMobile) {
+    if (conn) {
       fetchChartData(conn)
     }
-  }, [conn, isMobile])
+  }, [conn])
 
   const fetchChartData = async (connection: duckdb.AsyncDuckDBConnection) => {
     try {
@@ -90,43 +88,45 @@ export default function IndexPage() {
       setChartDataError("There was an issue with the query for the Hugging Face Hub growth chart.")
     }
 
-    const [modelLicenseResult, datasetLicenseResult, spaceSdkResult, topFinetunedModelsResult] =
-      await Promise.all([
-        connection.query(FETCH_MODEL_LICENSE_DATA_QUERY),
-        connection.query(FETCH_DATASET_LICENSE_DATA_QUERY),
-        connection.query(FETCH_SPACE_SDK_DATA_QUERY),
-        connection.query(FETCH_TOP_BASE_MODELS_TABLE_QUERY),
-      ])
+    // Only fetch additional data if not on mobile
+    if (!isMobile) {
+      const [modelLicenseResult, datasetLicenseResult, spaceSdkResult, topFinetunedModelsResult] =
+        await Promise.all([
+          connection.query(FETCH_MODEL_LICENSE_DATA_QUERY),
+          connection.query(FETCH_DATASET_LICENSE_DATA_QUERY),
+          connection.query(FETCH_SPACE_SDK_DATA_QUERY),
+          connection.query(FETCH_TOP_BASE_MODELS_TABLE_QUERY),
+        ])
 
-    setModelLicenseData(
-      modelLicenseResult.toArray().map((row, index) => ({
-        name: row.tag.replace("license:", ""),
-        value: Number(row.count),
-        fill: `hsl(${index * 30}, 70%, 50%)`,
-      }))
-    )
+      setModelLicenseData(
+        modelLicenseResult.toArray().map((row, index) => ({
+          name: row.tag.replace("license:", ""),
+          value: Number(row.count),
+          fill: `hsl(${index * 30}, 70%, 50%)`,
+        }))
+      )
 
-    setDatasetLicenseData(
-      datasetLicenseResult.toArray().map((row, index) => ({
-        name: row.tag.replace("license:", ""),
-        value: Number(row.count),
-        fill: `hsl(${index * 30}, 70%, 50%)`,
-      }))
-    )
+      setDatasetLicenseData(
+        datasetLicenseResult.toArray().map((row, index) => ({
+          name: row.tag.replace("license:", ""),
+          value: Number(row.count),
+          fill: `hsl(${index * 30}, 70%, 50%)`,
+        }))
+      )
 
-    setSpaceSdkData(
-      spaceSdkResult.toArray().map((row, index) => ({
-        name: row.sdk,
-        value: Number(row.count),
-        fill: `hsl(${index * 30}, 70%, 50%)`,
-      }))
-    )
+      setSpaceSdkData(
+        spaceSdkResult.toArray().map((row, index) => ({
+          name: row.sdk,
+          value: Number(row.count),
+          fill: `hsl(${index * 30}, 70%, 50%)`,
+        }))
+      )
 
-    setTopFinetunedModels(topFinetunedModelsResult.toArray().map(row => ({
-      model: row.model,
-      finetunes: Number(row.finetunes)
-    })))
-
+      setTopFinetunedModels(topFinetunedModelsResult.toArray().map(row => ({
+        model: row.model,
+        finetunes: Number(row.finetunes)
+      })))
+    }
   }
 
   const handleBaseModelSubmit = async (e: React.FormEvent) => {
@@ -137,7 +137,6 @@ export default function IndexPage() {
       return
     }
 
-    setIsLoading(true)
     try {
       const result = await conn.query(FETCH_FINETUNE_MODEL_GROWTH_QUERY(baseModel))
       const data = result.toArray().map((row: { date: Date; count: bigint }) => ({
@@ -148,8 +147,6 @@ export default function IndexPage() {
     } catch (error) {
       console.error("Error executing query:", error)
       toast.error(`Failed to fetch data for ${baseModel}`)
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -167,9 +164,7 @@ export default function IndexPage() {
         )}
       </div>
 
-      {/* Mobile devices have much less resources to process these queries */}
-
-      {isMobile === false && (
+      {!isMobile && (
         <>
           <div className="flex flex-wrap gap-8 max-w-6xl mt-10 w-full mx-auto">
             <div className="flex-1 min-w-[300px]">
@@ -214,15 +209,8 @@ export default function IndexPage() {
                 placeholder="Base Model Name"
                 className="px-4 w-full py-2 border rounded"
               />
-              <Button type="submit" disabled={isLoading} className="w-full">
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Loading
-                  </>
-                ) : (
-                  "Submit"
-                )}
+              <Button type="submit" className="w-full">
+                Submit
               </Button>
             </form>
           </div>
